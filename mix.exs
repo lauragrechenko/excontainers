@@ -10,7 +10,7 @@ defmodule Excontainers.MixProject do
       description: "Throwaway containers for your tests",
       source_url: @source_url,
       version: @version,
-      elixir: "~> 1.13.4",
+      elixir: "~> 1.14.1",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -44,9 +44,6 @@ defmodule Excontainers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-
       {:hackney, "~> 1.18"},
       {:jason, "~> 1.3"},
       {:tesla, "~> 1.4.0"},
@@ -58,7 +55,9 @@ defmodule Excontainers.MixProject do
       {:dialyxir, "~> 1.2", only: [:dev], runtime: false},
       {:myxql, "~> 0.5.0", only: [:dev, :test]},
       {:postgrex, "~> 0.9", only: [:dev, :test]},
-      {:redix, "~> 1.1", only: [:dev, :test]}
+      {:redix, "~> 1.1", only: [:dev, :test]},
+      {:syn, "~> 3.2"}
+
     ]
   end
 

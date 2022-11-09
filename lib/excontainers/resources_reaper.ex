@@ -72,7 +72,7 @@ defmodule Excontainers.ResourcesReaper do
 
   defp docker_filter(key, value), do: "#{url_encode(key)}=#{url_encode(value)}"
 
-  defp url_encode(string), do: :http_uri.encode(string)
+  defp url_encode(string), do: :uri_string.quote(string)
 
   defp wait_for_ack(socket), do: {:ok, "ACK\n"} = :gen_tcp.recv(socket, 0, 1_000)
 end
