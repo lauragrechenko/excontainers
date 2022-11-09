@@ -35,7 +35,7 @@ defmodule Docker.Api.Containers do
       |> Map.take([:t])
       |> remove_nil_values
 
-    case Client.post("/containers/#{container_id}/restart", query: query) do
+    case Client.post("/containers/#{container_id}/restart", %{}, query: query) do
       {:ok, %{status: 204}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
@@ -80,7 +80,9 @@ defmodule Docker.Api.Containers do
   def kill(container_id, signal \\ "SIGKILL") do
     query = %{signal: signal}
 
-    case Client.post("/containers/#{container_id}/kill",
+    case Client.post(
+           "/containers/#{container_id}/kill",
+           %{},
            query: query,
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
@@ -103,7 +105,9 @@ defmodule Docker.Api.Containers do
   def wait_stop(container_id, condition \\ "not-running") do
     query = %{condition: condition}
 
-    case Client.post("/containers/#{container_id}/wait",
+    case Client.post(
+           "/containers/#{container_id}/wait",
+           %{},
            query: query,
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
@@ -114,9 +118,7 @@ defmodule Docker.Api.Containers do
   end
 
   def pause(container_id) do
-    case Client.post("/containers/#{container_id}/pause",
-           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
-         ) do
+    case Client.post("/containers/#{container_id}/pause", %{}, opts: [adapter: [recv_timeout: @default_http_timeout_ms]]) do
       {:ok, %{status: 204}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
@@ -124,7 +126,9 @@ defmodule Docker.Api.Containers do
   end
 
   def unpause(container_id) do
-    case Client.post("/containers/#{container_id}/unpause",
+    case Client.post(
+           "/containers/#{container_id}/unpause",
+           %{},
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 204}} -> :ok
@@ -134,7 +138,7 @@ defmodule Docker.Api.Containers do
   end
 
   def rename(container_id, new_name) do
-    case Client.post("/containers/#{container_id}/rename", query: %{name: new_name}) do
+    case Client.post("/containers/#{container_id}/rename", %{}, query: %{name: new_name}) do
       {:ok, %{status: 204}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
