@@ -21,7 +21,8 @@ defmodule Docker.Api.Networks do
 
     case Client.post("/networks/#{network_id}/connect", payload,
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
-         ) |> IO.inspect do
+         )
+         |> IO.inspect() do
       {:ok, %{status: 200}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}

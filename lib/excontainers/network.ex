@@ -28,7 +28,7 @@ defmodule Excontainers.Network do
         {:error, :no_network}
 
       pid ->
-        GenServer.call(pid, {network_id, ignore}, timeout)
+        GenServer.call(pid, {:remove, network_id, ignore}, timeout)
     end
   end
 

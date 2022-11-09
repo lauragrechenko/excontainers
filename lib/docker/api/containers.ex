@@ -14,7 +14,7 @@ defmodule Docker.Api.Containers do
       %{name: name}
       |> remove_nil_values
 
-    case Client.post("/containers/create", data, query: query) |> IO.inspect do
+    case Client.post("/containers/create", data, query: query) |> IO.inspect() do
       {:ok, %{status: 201, body: body}} -> {:ok, body["Id"]}
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
