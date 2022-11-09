@@ -28,7 +28,7 @@ defmodule Excontainers.Network do
         {:error, :no_network}
 
       pid ->
-        GenServer.call(pid, {:remove, network_id, ignore}, timeout)
+        GenServer.call(pid, {:remove, ignore}, timeout)
     end
   end
 
@@ -113,15 +113,15 @@ defmodule Excontainers.Network do
     {:reply, result, state}
   end
 
-  def handle_call({:remove, true, reason}, _from, state) do
+  def handle_call({:remove, true}, _from, state) do
     Docker.Networks.remove(state.network_id)
-    {:stop, reason, :ok, state}
+    {:stop, :normal, :ok, state}
   end
 
-  def handle_call({:remove, false, reason}, _from, state) do
+  def handle_call({:remove, false}, _from, state) do
     case Docker.Networks.remove(state.network_id) do
       :ok ->
-        {:stop, reason, :ok, %__MODULE__{state | network_id: nil}}
+        {:stop, :normal, :ok, %__MODULE__{state | network_id: nil}}
 
       error ->
         {:reply, error, state}

@@ -57,7 +57,6 @@ defmodule Excontainers.MixProject do
       {:postgrex, "~> 0.9", only: [:dev, :test]},
       {:redix, "~> 1.1", only: [:dev, :test]},
       {:syn, "~> 3.2"}
-
     ]
   end
 
