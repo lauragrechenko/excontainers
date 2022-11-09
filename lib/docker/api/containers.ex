@@ -133,6 +133,14 @@ defmodule Docker.Api.Containers do
     end
   end
 
+  def rename(container_id, new_name) do
+    case Client.post("/containers/#{container_id}/rename", query: %{name: new_name}) do
+      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
   defp container_create_payload(container_config) do
     port_bindings_config =
       container_config.exposed_ports

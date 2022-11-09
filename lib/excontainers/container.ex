@@ -69,6 +69,16 @@ defmodule Excontainers.Container do
     end
   end
 
+  def rename(container_id, new_name) do
+    case :syn.whereis_name({@syn_scope, container_id}) do
+      :undefined ->
+        {:error, :no_container}
+
+      pid ->
+        GenServer.call(pid, {:rename, new_name})
+    end
+  end
+
   @doc """
   Returns the ID of the container on Docker.
   """
@@ -164,6 +174,11 @@ defmodule Excontainers.Container do
       error ->
         {:reply, error, state}
     end
+  end
+
+  def handle_call({:rename, new_name}, _from, state) do
+    result = Docker.Containers.rename(state.container_id, new_name)
+    {:reply, result, state}
   end
 
   @impl true

@@ -45,6 +45,8 @@ defmodule Docker.Containers do
 
   def info(container_id), do: Docker.Api.inspect_container(container_id)
 
+  def rename(container_id, new_name), do: Docker.Api.rename_container(container_id, new_name)
+
   def mapped_port(container, container_port) do
     container_port =
       container_port

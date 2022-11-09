@@ -24,6 +24,8 @@ defmodule Docker.Api do
 
   defdelegate unpause_container(container_id), to: Api.Containers, as: :unpause
 
+  defdelegate rename_container(container_id, new_name), to: Api.Containers, as: :rename
+
   # API Networks
   defdelegate create_network(config), to: Api.Networks, as: :create
 
