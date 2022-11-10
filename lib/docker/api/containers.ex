@@ -179,7 +179,7 @@ defmodule Docker.Api.Containers do
       Env: env_config,
       Labels: container_config.labels,
       HostConfig: %{
-        RestartPolicy: %{Name: "on-failure", MaximumRetryCount: 3},
+        RestartPolicy: %{Name: "always"},
         PortBindings: port_bindings_config,
         Privileged: container_config.privileged,
         Binds: volume_bindings
