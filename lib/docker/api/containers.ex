@@ -178,7 +178,12 @@ defmodule Docker.Api.Containers do
       ExposedPorts: exposed_ports_config,
       Env: env_config,
       Labels: container_config.labels,
-      HostConfig: %{PortBindings: port_bindings_config, Privileged: container_config.privileged, Binds: volume_bindings}
+      HostConfig: %{
+        RestartPolicy: %{Name: "on-failure", MaximumRetryCount: 3},
+        PortBindings: port_bindings_config,
+        Privileged: container_config.privileged,
+        Binds: volume_bindings
+      }
     }
     |> remove_nil_values
   end
