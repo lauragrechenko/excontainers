@@ -5,7 +5,7 @@ defmodule Docker.Api.Containers do
   alias Docker.ContainerState
 
   @default_http_timeout_ms Application.compile_env(:excontainers, :default_http_timeout_ms, 60_000)
-  @default_stop_container_timeout_s Application.compile_env(:excontainers, :default_stop_container_timeout_s, 10)
+  @default_stop_container_timeout_s Application.compile_env(:excontainers, :default_stop_container_timeout_s, 60)
 
   def create(container_config, name \\ nil) do
     data = container_create_payload(container_config)

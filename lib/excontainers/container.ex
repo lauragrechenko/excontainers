@@ -147,6 +147,7 @@ defmodule Excontainers.Container do
 
   def handle_call(:delete, _from, state) do
     Docker.Containers.stop(state.container_id)
+    Docker.Containers.wait_stop(state.container_id)
     Docker.Containers.remove(state.container_id)
     {:stop, :normal, :ok, state}
   end
