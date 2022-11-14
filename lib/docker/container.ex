@@ -17,6 +17,17 @@ defmodule Docker.Container do
     labels: %{}
   ]
 
+  @type t :: %__MODULE__{
+          image: String.t(),
+          cmd: String.t(),
+          environment: map(),
+          exposed_ports: list(),
+          wait_strategy: Docker.CommandWaitStrategy.t(),
+          privileged: boolean(),
+          bind_mounts: list(),
+          labels: map()
+        }
+
   @doc """
   Creates a _container_ from the given image.
 

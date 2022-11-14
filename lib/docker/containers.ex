@@ -27,7 +27,7 @@ defmodule Docker.Containers do
     Docker.Api.stop_container(container_id, options)
   end
 
-  def remove(container_id, options \\ %{}) do
+  def remove(container_id, options \\ []) do
     Docker.Api.remove_container(container_id, options)
   end
 

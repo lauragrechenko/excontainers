@@ -7,13 +7,27 @@ defmodule Excontainers.Container do
   @enforce_keys [:config]
   defstruct [:config, container_id: nil]
 
-  @default_call_timeout 60_000
+  @type stop_params :: %{
+          stop_timeout: integer(),
+          remove?: boolean(),
+          remove_volume?: boolean()
+        }
 
-  @syn_scope :syn_scope
+  @type kill_params :: %{
+          signal: String.t(),
+          remove?: boolean(),
+          remove_volume?: boolean()
+        }
+
+  @default_call_timeout 60_000
+  @default_kill_signal "SIGKILL"
+  @stop_container_timeout 30_000
+  @syn_excontainers_scope :syn_excontainers_scope
 
   @doc """
   Starts a container and blocks until container is ready.
   """
+  @spec start_link(config :: Docker.Container.t(), name :: String.t()) :: {:ok, pid}
   def start_link(config, name \\ "") do
     GenServer.start_link(__MODULE__, [config, name])
   end
@@ -22,13 +36,19 @@ defmodule Excontainers.Container do
   Stops the Container GenServer.
   When terminated in a non-brutal way, it also stops the container on Docker.
   """
-  def stop(container_id, ignore \\ true, reason \\ :normal, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_scope, container_id}) do
+  #  [OLD]
+  def stop(server) do
+    GenServer.stop(server, :normal, @default_call_timeout)
+  end
+
+  @spec stop(container_id :: String.t(), params :: stop_params(), timeout: integer()) :: :ok | {:error, term()}
+  def stop(container_id, params, timeout \\ @default_call_timeout) do
+    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
       :undefined ->
         {:error, :no_container}
 
       pid ->
-        GenServer.call(pid, {:stop, ignore, reason}, timeout)
+        GenServer.call(pid, {:stop, params}, timeout)
     end
   end
 
@@ -36,31 +56,27 @@ defmodule Excontainers.Container do
   Stops the Container GenServer.
   It also kills the container on Docker.
   """
-  def kill(container_id, signal \\ "SIGKILL", timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_scope, container_id}) do
+  @spec kill(container_id :: String.t(), params :: kill_params(), timeout: integer()) :: :ok | {:error, term()}
+  def kill(container_id, params, timeout \\ @default_call_timeout) do
+    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
       :undefined ->
         {:error, :no_container}
 
       pid ->
-        GenServer.call(pid, {:kill, signal}, timeout)
-    end
-  end
-
-  def delete(container_id, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_scope, container_id}) do
-      :undefined ->
-        {:error, :no_container}
-
-      pid ->
-        GenServer.call(pid, :delete, timeout)
+        GenServer.call(pid, {:kill, params}, timeout)
     end
   end
 
   @doc """
   Returns the configuration used to build the container.
   """
+  #  [OLD]
+  def config(pid) when is_pid(pid) do
+    GenServer.call(pid, :config)
+  end
+
   def config(container_id) do
-    case :syn.whereis_name({@syn_scope, container_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
       :undefined ->
         {:error, :no_container}
 
@@ -70,7 +86,7 @@ defmodule Excontainers.Container do
   end
 
   def rename(container_id, new_name) do
-    case :syn.whereis_name({@syn_scope, container_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
       :undefined ->
         {:error, :no_container}
 
@@ -87,8 +103,10 @@ defmodule Excontainers.Container do
   @doc """
   Returns the port on the _host machine_ that is mapped to the given port inside the _container_.
   """
+  def mapped_port(pid, port) when is_pid(pid), do: GenServer.call(pid, {:mapped_port, port})
+
   def mapped_port(container_id, port) do
-    case :syn.whereis_name({@syn_scope, container_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
       :undefined ->
         {:error, :no_container}
 
@@ -108,7 +126,7 @@ defmodule Excontainers.Container do
   def handle_info({:init, name}, state) do
     case Docker.Containers.run(state.config, name) do
       {:ok, container_id} ->
-        :syn.register(@syn_scope, container_id, self())
+        :syn.register(@syn_excontainers_scope, container_id, self())
         {:noreply, %__MODULE__{state | container_id: container_id}}
 
       {:error, _message} = error ->
@@ -145,36 +163,40 @@ defmodule Excontainers.Container do
     {:reply, result, state}
   end
 
-  def handle_call(:delete, _from, state) do
-    Docker.Containers.stop(state.container_id)
+  def handle_call({:stop, params}, _from, state) do
+    remove? = Map.get(params, :remove?, false)
+    stop_timeout = Map.get(params, :stop_timeout, @stop_container_timeout)
+
+    result = Docker.Containers.stop(state.container_id, timeout_seconds: stop_timeout)
     Docker.Containers.wait_stop(state.container_id)
-    Docker.Containers.remove(state.container_id)
-    {:stop, :normal, :ok, state}
-  end
 
-  def handle_call({:stop, true, reason}, _from, state) do
-    Docker.Containers.stop(state.container_id)
-    {:stop, reason, :ok, state}
-  end
+    case remove? do
+      true ->
+        remove_volume? = Map.get(params, :remove_volume?, false)
+        Docker.Containers.remove(state.container_id, v: remove_volume?)
 
-  def handle_call({:stop, false, reason}, _from, state) do
-    case Docker.Containers.stop(state.container_id) do
-      :ok ->
-        {:stop, reason, :ok, %__MODULE__{state | container_id: nil}}
-
-      error ->
-        {:reply, error, state}
+      false ->
+        :ok
     end
+
+    {:stop, :normal, result, state}
   end
 
-  def handle_call({:kill, signal}, _from, state) do
-    case Docker.Containers.kill(state.container_id, signal) do
-      :ok ->
-        {:stop, signal, :ok, %__MODULE__{state | container_id: nil}}
+  def handle_call({:kill, params}, _from, state) do
+    signal = Map.get(params, :signal, @default_kill_signal)
+    result = Docker.Containers.kill(state.container_id, signal)
+    Docker.Containers.wait_stop(state.container_id)
 
-      error ->
-        {:reply, error, state}
+    case Map.get(params, :remove?, false) do
+      true ->
+        remove_volume? = Map.get(params, :remove_volume?, false)
+        Docker.Containers.remove(state.container_id, v: remove_volume?)
+
+      false ->
+        :ok
     end
+
+    {:stop, :normal, result, state}
   end
 
   def handle_call({:rename, new_name}, _from, state) do

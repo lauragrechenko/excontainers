@@ -14,7 +14,7 @@ defmodule Docker.Api.Containers do
       %{name: name}
       |> remove_nil_values
 
-    case Client.post("/containers/create", data, query: query) |> IO.inspect() do
+    case Client.post("/containers/create", data, query: query) do
       {:ok, %{status: 201, body: body}} -> {:ok, body["Id"]}
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
@@ -61,10 +61,11 @@ defmodule Docker.Api.Containers do
     end
   end
 
-  def remove(container_id, params) do
+  def remove(container_id, options) do
     query =
-      params
-      |> Map.take([:v, :force, :link])
+      options
+      |> Keyword.take([:v, :force, :link])
+      |> Enum.into(%{})
       |> remove_nil_values
 
     case Client.delete("/containers/#{container_id}",

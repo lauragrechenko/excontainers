@@ -14,7 +14,7 @@ defmodule Docker.Api do
 
   defdelegate stop_container(container_id, options \\ []), to: Api.Containers, as: :stop
 
-  defdelegate remove_container(container_id, options \\ %{}), to: Api.Containers, as: :remove
+  defdelegate remove_container(container_id, options \\ []), to: Api.Containers, as: :remove
 
   defdelegate kill_container(container_id, signal \\ "SIGKILL"), to: Api.Containers, as: :kill
 
