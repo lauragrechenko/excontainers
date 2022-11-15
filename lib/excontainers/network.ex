@@ -9,7 +9,7 @@ defmodule Excontainers.Network do
 
   @default_call_timeout 60_000
 
-  @syn_scope :syn_scope
+  @syn_excontainers_scope :syn_excontainers_scope
 
   @doc """
   Starts a network.
@@ -23,7 +23,7 @@ defmodule Excontainers.Network do
   When terminated in a non-brutal way, it also stops the network on Docker.
   """
   def remove(network_id, ignore \\ true, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_scope, network_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
       :undefined ->
         {:error, :no_network}
 
@@ -33,7 +33,7 @@ defmodule Excontainers.Network do
   end
 
   def connect(network_id, container_id, config \\ [], timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_scope, network_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
       :undefined ->
         {:error, :no_network}
 
@@ -43,7 +43,7 @@ defmodule Excontainers.Network do
   end
 
   def disconnect(network_id, container_id, force \\ true, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_scope, network_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
       :undefined ->
         {:error, :no_network}
 
@@ -56,7 +56,7 @@ defmodule Excontainers.Network do
   Returns the configuration used to build the container.
   """
   def config(network_id) do
-    case :syn.whereis_name({@syn_scope, network_id}) do
+    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
       :undefined ->
         {:error, :no_network}
 
@@ -81,7 +81,7 @@ defmodule Excontainers.Network do
   def handle_info(:init, state) do
     case Docker.Networks.create(state.config) do
       {:ok, network_id} ->
-        :syn.register(@syn_scope, network_id, self())
+        :syn.register(@syn_excontainers_scope, network_id, self())
         {:noreply, %__MODULE__{state | network_id: network_id}}
 
       {:error, _message} = error ->
