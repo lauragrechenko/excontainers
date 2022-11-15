@@ -173,7 +173,8 @@ defmodule Excontainers.Container do
     case remove? do
       true ->
         remove_volume? = Map.get(params, :remove_volume?, false)
-        Docker.Containers.remove(state.container_id, v: remove_volume?)
+        force? = Map.get(params, :force?, true)
+        Docker.Containers.remove(state.container_id, v: remove_volume?, force: force?)
 
       false ->
         :ok

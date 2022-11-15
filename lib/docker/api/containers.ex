@@ -48,13 +48,13 @@ defmodule Docker.Api.Containers do
     http_timeout = (timeout_seconds + 1) * 1000
 
     query = %{t: timeout_seconds} |> remove_nil_values
-
+IO.inspect("stop")
     case Client.post(
            "/containers/#{container_id}/stop",
            %{},
            query: query,
            opts: [adapter: [recv_timeout: http_timeout]]
-         ) do
+         ) |> IO.inspect() do
       {:ok, %{status: status}} when status in [204, 304] -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
@@ -68,10 +68,11 @@ defmodule Docker.Api.Containers do
       |> Enum.into(%{})
       |> remove_nil_values
 
+      IO.inspect("remove")
     case Client.delete("/containers/#{container_id}",
            query: query,
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
-         ) do
+         ) |> IO.inspect() do
       {:ok, %{status: 204}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
@@ -106,12 +107,14 @@ defmodule Docker.Api.Containers do
   def wait_stop(container_id, condition \\ "not-running") do
     query = %{condition: condition}
 
+    IO.inspect("wait_stop")
+
     case Client.post(
            "/containers/#{container_id}/wait",
            %{},
            query: query,
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
-         ) do
+         ) |> IO.inspect do
       {:ok, %{status: 200, body: body}} -> {:ok, body}
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
