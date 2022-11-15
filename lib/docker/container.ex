@@ -14,7 +14,8 @@ defmodule Docker.Container do
     wait_strategy: nil,
     privileged: false,
     bind_mounts: [],
-    labels: %{}
+    labels: %{},
+    restart_policy: %{}
   ]
 
   @type t :: %__MODULE__{
@@ -25,7 +26,8 @@ defmodule Docker.Container do
           wait_strategy: Docker.CommandWaitStrategy.t(),
           privileged: boolean(),
           bind_mounts: list(),
-          labels: map()
+          labels: map(),
+          restart_policy: map()
         }
 
   @doc """
@@ -53,7 +55,8 @@ defmodule Docker.Container do
       environment: opts[:environment] || %{},
       exposed_ports: exposed_ports,
       privileged: opts[:privileged] || false,
-      wait_strategy: opts[:wait_strategy]
+      wait_strategy: opts[:wait_strategy],
+      restart_policy: opts[:restart_policy] || %{}
     }
   end
 

@@ -180,7 +180,7 @@ defmodule Docker.Api.Containers do
       Env: env_config,
       Labels: container_config.labels,
       HostConfig: %{
-        RestartPolicy: %{Name: "always"},
+        RestartPolicy: container_config.restart_policy,
         PortBindings: port_bindings_config,
         Privileged: container_config.privileged,
         Binds: volume_bindings
