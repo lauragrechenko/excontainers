@@ -136,7 +136,7 @@ defmodule Docker.ContainersTest do
     end
 
     test "when image does not exist, automatically fetches it before starting the container" do
-      image_that_no_one_should_be_using = "busybox:1.24.1-uclibc"
+      image_that_no_one_should_be_using = "busybox:latest"
 
       container_config = %Container{
         image: image_that_no_one_should_be_using,

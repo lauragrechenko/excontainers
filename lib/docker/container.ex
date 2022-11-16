@@ -14,8 +14,21 @@ defmodule Docker.Container do
     wait_strategy: nil,
     privileged: false,
     bind_mounts: [],
-    labels: %{}
+    labels: %{},
+    restart_policy: %{}
   ]
+
+  @type t :: %__MODULE__{
+          image: String.t(),
+          cmd: String.t(),
+          environment: map(),
+          exposed_ports: list(),
+          wait_strategy: Docker.CommandWaitStrategy.t(),
+          privileged: boolean(),
+          bind_mounts: list(),
+          labels: map(),
+          restart_policy: map()
+        }
 
   @doc """
   Creates a _container_ from the given image.
@@ -42,7 +55,8 @@ defmodule Docker.Container do
       environment: opts[:environment] || %{},
       exposed_ports: exposed_ports,
       privileged: opts[:privileged] || false,
-      wait_strategy: opts[:wait_strategy]
+      wait_strategy: opts[:wait_strategy],
+      restart_policy: opts[:restart_policy] || %{}
     }
   end
 
