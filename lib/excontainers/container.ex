@@ -206,12 +206,13 @@ defmodule Excontainers.Container do
   end
 
   @impl true
-  def terminate(reason, %{container_id: container_id} = _state) when container_id != nil do
-    Docker.Containers.stop(container_id)
+  def terminate(reason, _state) when reason == :normal do
     reason
   end
 
-  def terminate(reason, _state) do
+  def terminate(reason, %{container_id: container_id} = _state) when container_id != nil do
+    Docker.Containers.kill(container_id)
+    Docker.Containers.remove(container_id, v: true)
     reason
   end
 end

@@ -22,13 +22,13 @@ defmodule Excontainers.Network do
   Stops the network GenServer.
   When terminated in a non-brutal way, it also stops the network on Docker.
   """
-  def remove(network_id, ignore \\ true, timeout \\ @default_call_timeout) do
+  def remove(network_id, timeout \\ @default_call_timeout) do
     case :syn.lookup(@syn_excontainers_scope, network_id) do
       :undefined ->
         {:error, :no_network}
 
       {pid, _} ->
-        GenServer.call(pid, {:remove, ignore}, timeout)
+        GenServer.call(pid, :remove, timeout)
     end
   end
 
@@ -113,28 +113,18 @@ defmodule Excontainers.Network do
     {:reply, result, state}
   end
 
-  def handle_call({:remove, true}, _from, state) do
+  def handle_call(:remove, true, _from, state) do
     Docker.Networks.remove(state.network_id)
     {:stop, :normal, :ok, state}
   end
 
-  def handle_call({:remove, false}, _from, state) do
-    case Docker.Networks.remove(state.network_id) do
-      :ok ->
-        {:stop, :normal, :ok, %__MODULE__{state | network_id: nil}}
-
-      error ->
-        {:reply, error, state}
-    end
-  end
-
   @impl true
-  def terminate(reason, %{network_id: network_id} = _state) when network_id != nil do
-    Docker.Networks.remove(network_id)
+  def terminate(reason, _state) when reason == :normal do
     reason
   end
 
-  def terminate(reason, _state) do
+  def terminate(reason, %{network_id: network_id} = _state) when network_id != nil do
+    Docker.Networks.remove(network_id)
     reason
   end
 end
