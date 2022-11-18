@@ -18,6 +18,10 @@ defmodule Excontainers.Network do
     GenServer.start_link(__MODULE__, config)
   end
 
+  def start(config) do
+    GenServer.start(__MODULE__, config)
+  end
+
   @doc """
   Stops the network GenServer.
   When terminated in a non-brutal way, it also stops the network on Docker.

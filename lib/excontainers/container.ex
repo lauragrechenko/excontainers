@@ -32,6 +32,10 @@ defmodule Excontainers.Container do
     GenServer.start_link(__MODULE__, [config, name])
   end
 
+  def start(config, name \\ "") do
+    GenServer.start(__MODULE__, [config, name])
+  end
+
   @doc """
   Stops the Container GenServer.
   When terminated in a non-brutal way, it also stops the container on Docker.
