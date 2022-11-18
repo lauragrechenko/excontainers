@@ -35,7 +35,7 @@ defmodule Docker.Api.Networks do
            data,
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
-      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: 200}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end

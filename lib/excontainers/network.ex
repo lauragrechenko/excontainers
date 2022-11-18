@@ -117,9 +117,9 @@ defmodule Excontainers.Network do
     {:reply, result, state}
   end
 
-  def handle_call(:remove, true, _from, state) do
-    Docker.Networks.remove(state.network_id)
-    {:stop, :normal, :ok, state}
+  def handle_call(:remove, _from, state) do
+    result = Docker.Networks.remove(state.network_id)
+    {:stop, :normal, result, state}
   end
 
   @impl true
