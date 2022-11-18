@@ -43,11 +43,11 @@ defmodule Excontainers.Container do
 
   @spec stop(container_id :: String.t(), params :: stop_params(), timeout: integer()) :: :ok | {:error, term()}
   def stop(container_id, params, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
+    case :syn.lookup(@syn_excontainers_scope, container_id) do
       :undefined ->
         {:error, :no_container}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:stop, params}, timeout)
     end
   end
@@ -58,11 +58,11 @@ defmodule Excontainers.Container do
   """
   @spec kill(container_id :: String.t(), params :: kill_params(), timeout: integer()) :: :ok | {:error, term()}
   def kill(container_id, params, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
+    case :syn.lookup(@syn_excontainers_scope, container_id) do
       :undefined ->
         {:error, :no_container}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:kill, params}, timeout)
     end
   end
@@ -76,21 +76,21 @@ defmodule Excontainers.Container do
   end
 
   def config(container_id) do
-    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
+    case :syn.lookup(@syn_excontainers_scope, container_id) do
       :undefined ->
         {:error, :no_container}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, :config)
     end
   end
 
   def rename(container_id, new_name) do
-    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
+    case :syn.lookup(@syn_excontainers_scope, container_id) do
       :undefined ->
         {:error, :no_container}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:rename, new_name})
     end
   end
@@ -106,11 +106,11 @@ defmodule Excontainers.Container do
   def mapped_port(pid, port) when is_pid(pid), do: GenServer.call(pid, {:mapped_port, port})
 
   def mapped_port(container_id, port) do
-    case :syn.whereis_name({@syn_excontainers_scope, container_id}) do
+    case :syn.lookup(@syn_excontainers_scope, container_id) do
       :undefined ->
         {:error, :no_container}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:mapped_port, port})
     end
   end

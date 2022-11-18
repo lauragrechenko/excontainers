@@ -23,31 +23,31 @@ defmodule Excontainers.Network do
   When terminated in a non-brutal way, it also stops the network on Docker.
   """
   def remove(network_id, ignore \\ true, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
+    case :syn.lookup(@syn_excontainers_scope, network_id) do
       :undefined ->
         {:error, :no_network}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:remove, ignore}, timeout)
     end
   end
 
   def connect(network_id, container_id, config \\ [], timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
+    case :syn.lookup(@syn_excontainers_scope, network_id) do
       :undefined ->
         {:error, :no_network}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:connect, container_id, config}, timeout)
     end
   end
 
   def disconnect(network_id, container_id, force \\ true, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
+    case :syn.lookup(@syn_excontainers_scope, network_id) do
       :undefined ->
         {:error, :no_network}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, {:disconnect, container_id, force}, timeout)
     end
   end
@@ -56,11 +56,11 @@ defmodule Excontainers.Network do
   Returns the configuration used to build the container.
   """
   def config(network_id) do
-    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
+    case :syn.lookup(@syn_excontainers_scope, network_id) do
       :undefined ->
         {:error, :no_network}
 
-      pid ->
+      {pid, _} ->
         GenServer.call(pid, :config)
     end
   end
