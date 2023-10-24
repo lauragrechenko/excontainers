@@ -7,13 +7,12 @@ defmodule Docker.Containers do
   end
 
   def run(container_config, name \\ nil) do
-    case Docker.Api.create_container(container_config, name) do
+    with {:error, {:http_error, 404}} <- Docker.Api.create_container(container_config, name),
+         :ok <- Docker.Api.pull_image(container_config.image) do
+      run(container_config, name)
+    else
       {:ok, container_id} ->
         start_and_wait(container_id, container_config)
-
-      {:error, {:http_error, 404}} ->
-        Docker.Images.pull(container_config.image)
-        run(container_config)
 
       {:error, reason} ->
         {:error, reason}
@@ -28,7 +27,25 @@ defmodule Docker.Containers do
     Docker.Api.stop_container(container_id, options)
   end
 
+  def remove(container_id, options \\ []) do
+    Docker.Api.remove_container(container_id, options)
+  end
+
+  def kill(container_id, signal \\ "SIGKILL") do
+    Docker.Api.kill_container(container_id, signal)
+  end
+
+  def wait_stop(container_id, condition \\ "not-running") do
+    Docker.Api.wait_stop_container(container_id, condition)
+  end
+
+  def pause(container_id), do: Docker.Api.pause_container(container_id)
+
+  def unpause(container_id), do: Docker.Api.unpause_container(container_id)
+
   def info(container_id), do: Docker.Api.inspect_container(container_id)
+
+  def rename(container_id, new_name), do: Docker.Api.rename_container(container_id, new_name)
 
   def mapped_port(container, container_port) do
     container_port =

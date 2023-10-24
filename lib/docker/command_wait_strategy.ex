@@ -4,6 +4,8 @@ defmodule Docker.CommandWaitStrategy do
   """
   defstruct [:command]
 
+  @type t :: %__MODULE__{command: String.t() | [String.t()]}
+
   @doc """
   Creates a new CommandWaitStrategy to wait until the given command executes successfully inside the container.
   """

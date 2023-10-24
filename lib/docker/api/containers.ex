@@ -4,6 +4,9 @@ defmodule Docker.Api.Containers do
   alias Docker.Api.Client
   alias Docker.ContainerState
 
+  @default_http_timeout_ms Application.compile_env(:excontainers, :default_http_timeout_ms, 60_000)
+  @default_stop_container_timeout_s Application.compile_env(:excontainers, :default_stop_container_timeout_s, 60)
+
   def create(container_config, name \\ nil) do
     data = container_create_payload(container_config)
 
@@ -26,8 +29,21 @@ defmodule Docker.Api.Containers do
     end
   end
 
+  def restart(container_id, params) do
+    query =
+      params
+      |> Map.take([:t])
+      |> remove_nil_values
+
+    case Client.post("/containers/#{container_id}/restart", %{}, query: query) do
+      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
   def stop(container_id, options \\ []) do
-    timeout_seconds = Keyword.get(options, :timeout_seconds, 10)
+    timeout_seconds = Keyword.get(options, :timeout_seconds, @default_stop_container_timeout_s)
     # enough to wait for container timeout
     http_timeout = (timeout_seconds + 1) * 1000
 
@@ -45,9 +61,86 @@ defmodule Docker.Api.Containers do
     end
   end
 
+  def remove(container_id, options) do
+    query =
+      options
+      |> Keyword.take([:v, :force, :link])
+      |> Enum.into(%{})
+      |> remove_nil_values
+
+    case Client.delete("/containers/#{container_id}",
+           query: query,
+           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
+         ) do
+      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
+  def kill(container_id, signal \\ "SIGKILL") do
+    query = %{signal: signal}
+
+    case Client.post(
+           "/containers/#{container_id}/kill",
+           %{},
+           query: query,
+           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
+         ) do
+      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
   def inspect(container_id) do
-    case Client.get("/containers/#{container_id}/json") do
+    case Client.get("/containers/#{container_id}/json",
+           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
+         ) do
       {:ok, %{status: 200, body: body}} -> {:ok, ContainerState.parse_docker_response(body)}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
+  def wait_stop(container_id, condition \\ "not-running") do
+    query = %{condition: condition}
+
+    case Client.post(
+           "/containers/#{container_id}/wait",
+           %{},
+           query: query,
+           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
+         ) do
+      {:ok, %{status: 200, body: body}} -> {:ok, body}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
+  def pause(container_id) do
+    case Client.post("/containers/#{container_id}/pause", %{}, opts: [adapter: [recv_timeout: @default_http_timeout_ms]]) do
+      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
+  def unpause(container_id) do
+    case Client.post(
+           "/containers/#{container_id}/unpause",
+           %{},
+           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
+         ) do
+      {:ok, %{status: 204}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
+  def rename(container_id, new_name) do
+    case Client.post("/containers/#{container_id}/rename", %{}, query: %{name: new_name}) do
+      {:ok, %{status: 204}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
@@ -86,7 +179,12 @@ defmodule Docker.Api.Containers do
       ExposedPorts: exposed_ports_config,
       Env: env_config,
       Labels: container_config.labels,
-      HostConfig: %{PortBindings: port_bindings_config, Privileged: container_config.privileged, Binds: volume_bindings}
+      HostConfig: %{
+        RestartPolicy: container_config.restart_policy,
+        PortBindings: port_bindings_config,
+        Privileged: container_config.privileged,
+        Binds: volume_bindings
+      }
     }
     |> remove_nil_values
   end
