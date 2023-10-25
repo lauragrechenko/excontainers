@@ -39,6 +39,10 @@ defmodule Docker.Containers do
     Docker.Api.wait_stop_container(container_id, condition)
   end
 
+  def delete_stopped() do
+    Docker.Api.delete_stopped()
+  end
+
   def pause(container_id), do: Docker.Api.pause_container(container_id)
 
   def unpause(container_id), do: Docker.Api.unpause_container(container_id)

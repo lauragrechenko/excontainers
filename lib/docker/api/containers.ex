@@ -93,6 +93,14 @@ defmodule Docker.Api.Containers do
     end
   end
 
+  def delete_stopped() do
+    case Client.post("/containers/prune", %{}) do
+      {:ok, %{status: 200}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:error, message} -> {:error, message}
+    end
+  end
+
   def inspect(container_id) do
     case Client.get("/containers/#{container_id}/json",
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
@@ -119,7 +127,9 @@ defmodule Docker.Api.Containers do
   end
 
   def pause(container_id) do
-    case Client.post("/containers/#{container_id}/pause", %{}, opts: [adapter: [recv_timeout: @default_http_timeout_ms]]) do
+    case Client.post("/containers/#{container_id}/pause", %{},
+           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
+         ) do
       {:ok, %{status: 204}} -> :ok
       {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
