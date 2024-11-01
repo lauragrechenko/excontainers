@@ -10,9 +10,7 @@ defmodule Docker.Api.Containers do
   def create(container_config, name \\ nil) do
     data = container_create_payload(container_config)
 
-    query =
-      %{name: name}
-      |> remove_nil_values
+    query = %{name: name} |> remove_nil_values
 
     case Client.post("/containers/create", data, query: query) do
       {:ok, %{status: 201, body: body}} -> {:ok, body["Id"]}
@@ -190,7 +188,6 @@ defmodule Docker.Api.Containers do
       Env: env_config,
       Labels: container_config.labels,
       HostConfig: %{
-        AutoRemove: container_config.auto_remove,
         RestartPolicy: container_config.restart_policy,
         PortBindings: port_bindings_config,
         Privileged: container_config.privileged,
