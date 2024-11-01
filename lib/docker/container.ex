@@ -28,7 +28,8 @@ defmodule Docker.Container do
           privileged: boolean(),
           bind_mounts: list(),
           labels: map(),
-          restart_policy: map()
+          restart_policy: map(),
+          auto_remove: boolean()
         }
 
   @doc """
@@ -42,8 +43,8 @@ defmodule Docker.Container do
   - `exposed_ports` sets the ports to expose to the host
   - `privileged` indicates whether the container should run in privileged mode (default false)
   - `wait_strategy` sets the strategy to adopt to determine whether the container is ready for use
+  - `restart_policy` sets the behavior of container restarts when they exit or encounter failures
   - `auto_remove` whether to automatically remove the container after it's stopped (default true)
-
   """
   def new(image, opts \\ []) do
     exposed_ports =

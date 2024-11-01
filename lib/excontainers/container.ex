@@ -52,14 +52,6 @@ defmodule Excontainers.Container do
     end
   end
 
-  @impl true
-  def init(config) do
-    Process.flag(:trap_exit, true)
-    {:ok, container_id} = Docker.Containers.run(config)
-
-    {:ok, %__MODULE__{config: config, container_id: container_id}}
-  end
-
   @doc """
   Stops the Container GenServer.
   It also kills the container on Docker.
@@ -123,12 +115,15 @@ defmodule Excontainers.Container do
     end
   end
 
-  # Server
   @impl true
   def init([config, name]) do
+    Process.flag(:trap_exit, true)
     send(self(), {:init, name})
     {:ok, %__MODULE__{config: config, container_id: nil}}
   end
+
+  @impl true
+  def init(config, name \\ nil), do: init([config, name])
 
   @impl true
   def handle_info({:init, name}, state) do
