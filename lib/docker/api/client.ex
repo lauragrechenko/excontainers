@@ -5,7 +5,7 @@ defmodule Docker.Api.Client do
 
   alias Docker.Api.{DockerHost, HackneyHost}
 
-  @api_version "v1.41"
+  @api_version "v1.43"
 
   plug(Tesla.Middleware.BaseUrl, base_url())
   plug(Tesla.Middleware.JSON)
