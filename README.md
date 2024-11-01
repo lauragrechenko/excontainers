@@ -6,8 +6,7 @@
   </p>
 </div>
 <div align="center" style="text-align: center;">
-  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/dallagi/excontainers/Elixir%20CI">
-  <img alt="Coveralls" src="https://img.shields.io/coveralls/github/dallagi/excontainers">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/dallagi/excontainers/ci.yml?branch=master">
   <img alt="Hex.pm" src="https://img.shields.io/hexpm/v/excontainers">
 </div>
 
@@ -28,7 +27,7 @@ The package can be installed by adding `excontainers` to your list of dependenci
 ```elixir
 def deps do
   [
-    {:excontainers, "~> 0.3.0", only: [:dev, :test]},
+    {:excontainers, "~> 0.3.1", only: [:dev, :test]},
   ]
 end
 ```
