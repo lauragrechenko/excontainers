@@ -190,6 +190,7 @@ defmodule Docker.Api.Containers do
       Env: env_config,
       Labels: container_config.labels,
       HostConfig: %{
+        AutoRemove: container_config.auto_remove,
         RestartPolicy: container_config.restart_policy,
         PortBindings: port_bindings_config,
         Privileged: container_config.privileged,
