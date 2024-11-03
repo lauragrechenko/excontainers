@@ -42,29 +42,6 @@ defmodule Excontainers.Network do
     end
   end
 
-  def disconnect(network_id, container_id, force \\ true, timeout \\ @default_call_timeout) do
-    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
-      :undefined ->
-        {:error, :no_network}
-
-      pid ->
-        GenServer.call(pid, {:disconnect, container_id, force}, timeout)
-    end
-  end
-
-  @doc """
-  Returns the configuration used to build the container.
-  """
-  def config(network_id) do
-    case :syn.whereis_name({@syn_excontainers_scope, network_id}) do
-      :undefined ->
-        {:error, :no_network}
-
-      pid ->
-        GenServer.call(pid, :config)
-    end
-  end
-
   @doc """
   Returns the ID of the container on Docker.
   """
@@ -89,27 +66,12 @@ defmodule Excontainers.Network do
     end
   end
 
-  @impl true
-  def handle_call(:config, _from, state) do
-    {:reply, state.config, state}
-  end
-
   def handle_call(:network_id, _from, state) do
     {:reply, state.network_id, state}
   end
 
   def handle_call({:connect, container_id, config}, _from, state) do
     result = Docker.Networks.connect(state.network_id, container_id, config)
-    {:reply, result, state}
-  end
-
-  def handle_call({:disconnect, container_id, force}, _from, state) do
-    result = Docker.Networks.disconnect(state.network_id, container_id, force)
-    {:reply, result, state}
-  end
-
-  def handle_call(:inspect, _from, state) do
-    result = Docker.Networks.inspect(state.network_id)
     {:reply, result, state}
   end
 

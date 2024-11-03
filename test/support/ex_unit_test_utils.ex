@@ -15,7 +15,7 @@ defmodule Support.ExUnitTestUtils do
 
   defmacro load_ex_unit do
     quote do
-      ExUnit.Server.modules_loaded()
+      ExUnit.Server.modules_loaded(false)
       configure_and_reload_on_exit()
     end
   end
