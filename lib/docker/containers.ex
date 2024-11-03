@@ -49,13 +49,7 @@ defmodule Docker.Containers do
     Docker.Api.delete_stopped()
   end
 
-  def pause(container_id), do: Docker.Api.pause_container(container_id)
-
-  def unpause(container_id), do: Docker.Api.unpause_container(container_id)
-
   def info(container_id), do: Docker.Api.inspect_container(container_id)
-
-  def rename(container_id, new_name), do: Docker.Api.rename_container(container_id, new_name)
 
   def mapped_port(container, container_port), do: mapped_port(container, container_port, 5)
 

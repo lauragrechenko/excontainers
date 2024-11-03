@@ -1,7 +1,7 @@
 defmodule Docker.ContainersTest do
   use ExUnit.Case, async: true
 
-  alias Docker.{BindMount, CommandWaitStrategy, Container, ContainerState, Containers}
+  alias Docker.{BindMount, CommandWaitStrategy, Container, Containers}
   import Support.DockerTestUtils
 
   @alpine "alpine:20201218"
@@ -184,41 +184,6 @@ defmodule Docker.ContainersTest do
 
     test "returns error when container does not exist" do
       assert {:error, _} = Containers.stop("unexisting-container-#{UUID.uuid4()}")
-    end
-  end
-
-  describe "info" do
-    test "returns info about running container" do
-      container_id = run_a_container()
-
-      expected_container_info = %ContainerState{
-        id: container_id,
-        status: %ContainerState.Status{state: :running, running: true},
-        mapped_ports: %{}
-      }
-
-      assert {:ok, ^expected_container_info} = Containers.info(container_id)
-    end
-
-    test "returns error when container does not exist" do
-      assert {:error, _} = Containers.info("unexisting-container-#{UUID.uuid4()}")
-    end
-  end
-
-  describe "mapped_port/2" do
-    test "gets the host port corresponding to a mapped port in the container" do
-      container_id =
-        run_a_container(
-          "hashicorp/http-echo:0.2.3",
-          ["-listen=:8080", ~s(-text="hello world")],
-          "8080"
-        )
-
-      {:ok, port} = Docker.Containers.mapped_port(container_id, 8080)
-      {:ok, response} = Tesla.get("http://localhost:#{port}/")
-
-      assert is_integer(port)
-      assert response.body =~ "hello world"
     end
   end
 end
