@@ -1,8 +1,6 @@
 defmodule Docker.Api.Containers do
   @moduledoc false
 
-  require Logger
-
   alias Docker.Api.Client
   alias Docker.ContainerState
 
@@ -16,19 +14,15 @@ defmodule Docker.Api.Containers do
 
     case Client.post("/containers/create", data, query: query) do
       {:ok, %{status: 201, body: body}} -> {:ok, body["Id"]}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
 
   def start(container_id) do
-    case Client.post(
-           "/containers/#{container_id}/start",
-           %{},
-           opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
-         ) do
+    case Client.post("/containers/#{container_id}/start", %{}) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -41,7 +35,7 @@ defmodule Docker.Api.Containers do
 
     case Client.post("/containers/#{container_id}/restart", %{}, query: query) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -60,7 +54,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: http_timeout]]
          ) do
       {:ok, %{status: status}} when status in [204, 304] -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -77,7 +71,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -92,7 +86,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -100,7 +94,7 @@ defmodule Docker.Api.Containers do
   def delete_stopped() do
     case Client.post("/containers/prune", %{}) do
       {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -110,7 +104,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 200, body: body}} -> {:ok, ContainerState.parse_docker_response(body)}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -125,7 +119,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 200, body: body}} -> {:ok, body}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -135,7 +129,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -147,7 +141,7 @@ defmodule Docker.Api.Containers do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -155,7 +149,7 @@ defmodule Docker.Api.Containers do
   def rename(container_id, new_name) do
     case Client.post("/containers/#{container_id}/rename", %{}, query: %{name: new_name}) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end

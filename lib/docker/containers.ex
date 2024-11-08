@@ -2,12 +2,14 @@ defmodule Docker.Containers do
   @moduledoc false
   alias Docker.WaitStrategy
 
+  require Logger
+
   def create(container_config, name \\ nil) do
     Docker.Api.create_container(container_config, name)
   end
 
   def run(container_config, name \\ nil) do
-    with {:error, {:http_error, 404, _body}} <- Docker.Api.create_container(container_config, name),
+    with {:error, {:http_error, 404}} <- Docker.Api.create_container(container_config, name),
          Logger.info("Container #{name} is not found"),
          :ok <- Docker.Api.pull_image(container_config.image) do
       Logger.info("Successfully pulled the image #{container_config.image}")

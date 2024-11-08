@@ -6,7 +6,7 @@ defmodule Docker.Api.Exec do
   def inspect(exec_id) do
     case Client.get("/exec/#{exec_id}/json") do
       {:ok, %{status: 200, body: body}} -> {:ok, parse_inspect_result(body)}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -16,7 +16,7 @@ defmodule Docker.Api.Exec do
 
     case Client.post("/containers/#{container_id}/exec", data) do
       {:ok, %{status: 201, body: body}} -> {:ok, body["Id"]}
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -24,7 +24,7 @@ defmodule Docker.Api.Exec do
   def start(exec_id) do
     case Client.post("/exec/#{exec_id}/start", %{}) do
       {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end

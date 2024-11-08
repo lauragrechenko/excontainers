@@ -11,7 +11,7 @@ defmodule Docker.Api.Images do
            opts: [adapter: [recv_timeout: @one_minute]]
          ) do
       {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
@@ -19,7 +19,7 @@ defmodule Docker.Api.Images do
   def inspect(name) do
     case Client.get("/images/#{name}/json") do
       {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
+      {:ok, %{status: status}} -> {:error, {:http_error, status}}
       {:error, message} -> {:error, message}
     end
   end
