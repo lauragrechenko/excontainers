@@ -10,7 +10,7 @@ defmodule Docker.Api.Networks do
 
     case Client.post("/networks/create", payload, opts: [adapter: [recv_timeout: @default_http_timeout_ms]]) do
       {:ok, %{status: 201, body: body}} -> {:ok, body["Id"]}
-      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
       {:error, message} -> {:error, message}
     end
   end
@@ -22,7 +22,7 @@ defmodule Docker.Api.Networks do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 200}} -> :ok
-      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
       {:error, message} -> {:error, message}
     end
   end
@@ -36,7 +36,7 @@ defmodule Docker.Api.Networks do
            opts: [adapter: [recv_timeout: @default_http_timeout_ms]]
          ) do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
       {:error, message} -> {:error, message}
     end
   end
@@ -44,7 +44,7 @@ defmodule Docker.Api.Networks do
   def inspect(network_id) do
     case Client.get("/networks/#{network_id}") do
       {:ok, %{status: 200, body: body}} -> {:ok, body}
-      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
       {:error, message} -> {:error, message}
     end
   end
@@ -52,7 +52,7 @@ defmodule Docker.Api.Networks do
   def remove(network_id) do
     case Client.delete("/networks/#{network_id}") do
       {:ok, %{status: 204}} -> :ok
-      {:ok, %{status: status}} -> {:error, {:http_error, status}}
+      {:ok, %{status: status, body: body}} -> {:error, {:http_error, status, body}}
       {:error, message} -> {:error, message}
     end
   end
