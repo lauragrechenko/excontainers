@@ -2,6 +2,8 @@ defmodule Docker.Containers do
   @moduledoc false
   alias Docker.WaitStrategy
 
+  require Logger
+
   def create(container_config, name \\ nil) do
     Docker.Api.create_container(container_config, name)
   end
